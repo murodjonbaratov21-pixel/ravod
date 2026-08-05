@@ -67,7 +67,7 @@ async def back_to_main(message: types.Message):
 @dp.message(F.text == "🔙 Orqaga", CartOrder.contact)
 async def cancel_order(message: types.Message, state: FSMContext):
     await state.clear()
-    await message.answer("Zakaz bekor qilindi.", reply_markup=keyboards.get_user_kb(message.from_user.id))
+    await message.answer("Buyurtma bekor qilindi.", reply_markup=keyboards.get_user_kb(message.from_user.id))
 
 
 @dp.message(F.text == "🛍 Katalog")
@@ -153,7 +153,7 @@ async def clear_cart_action(call: types.CallbackQuery):
 @dp.callback_query(F.data == "checkout_cart")
 async def checkout_cart_start(call: types.CallbackQuery, state: FSMContext):
     await call.message.delete()
-    await call.message.answer("📞 Zakazni rasmiylashtirish uchun telefon raqamingizni yuboring:",
+    await call.message.answer("📞 Buyurtmani rasmiylashtirish uchun telefon raqamingizni yuboring:",
                               reply_markup=keyboards.contact_kb)
     await state.set_state(CartOrder.contact)
 
@@ -178,7 +178,7 @@ async def cart_buy_finish(message: types.Message, state: FSMContext):
     await bot.send_message(config.ADMIN_ID, admin_text, parse_mode="HTML")
     database.clear_cart(message.from_user.id)
     await state.clear()
-    await message.answer("✅ Buyurtmangiz qabul qilindi! Tez orada operatorlarimiz siz bilan bog'lanadi.",
+    await message.answer("✅ Buyurtmangiz qabul qilindi! Tez orada adminlarimiz siz bilan bog'lanadi.",
                          reply_markup=keyboards.get_user_kb(message.from_user.id))
 
 
@@ -187,7 +187,7 @@ async def fast_buy_start(call: types.CallbackQuery, state: FSMContext):
     prod_id = int(call.data.split("_")[1])
     await state.update_data(product_id=prod_id)
     await call.message.delete()
-    await call.message.answer("📞 Zakazni rasmiylashtirish uchun telefon raqamingizni yuboring:",
+    await call.message.answer("📞 Buyurtmani rasmiylashtirish uchun telefon raqamingizni yuboring:",
                               reply_markup=keyboards.contact_kb)
     await state.set_state(FastOrder.contact)
 
@@ -209,7 +209,7 @@ async def fast_buy_finish(message: types.Message, state: FSMContext):
 
     await bot.send_message(config.ADMIN_ID, admin_text, parse_mode="HTML")
     await state.clear()
-    await message.answer("✅ Buyurtmangiz qabul qilindi! Tez orada operatorlarimiz siz bilan bog'lanadi.",
+    await message.answer("✅ Buyurtmangiz qabul qilindi! Tez orada adminlarimiz siz bilan bog'lanadi.",
                          reply_markup=keyboards.get_user_kb(message.from_user.id))
 
 
