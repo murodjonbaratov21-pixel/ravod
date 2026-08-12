@@ -8,15 +8,17 @@ def db_connect():
 def create_tables():
     conn = db_connect()
     cursor = conn.cursor()
+
     cursor.execute('''CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE)''')
     cursor.execute(
         '''CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, price INTEGER, photo_id TEXT, category_id INTEGER)''')
     cursor.execute(
         '''CREATE TABLE IF NOT EXISTS carts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, product_id INTEGER)''')
-
-    # YANGI: Foydalanuvchilar va Sozlamalar jadvali
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)''')
+
+    # MANA SHU YERGA QO'SHILDI (Baza yopilishidan oldin)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS admins (user_id INTEGER PRIMARY KEY, role TEXT)''')
 
     try:
         cursor.execute("ALTER TABLE products ADD COLUMN is_available INTEGER DEFAULT 1")
@@ -29,10 +31,6 @@ def create_tables():
     conn.close()
 
 
-# create_tables ichidagi admins jadvalini shunday qiling:
-    cursor.execute('''CREATE TABLE IF NOT EXISTS admins (user_id INTEGER PRIMARY KEY, role TEXT)''')
-
-# add_admin funksiyasini shunday o'zgartiring:
 def add_admin(user_id, role):
     conn = db_connect()
     cursor = conn.cursor()
@@ -40,7 +38,7 @@ def add_admin(user_id, role):
     conn.commit()
     conn.close()
 
-# is_admin funksiyasi:
+
 def is_admin(user_id):
     import config
     if str(user_id) == str(config.ADMIN_ID):
@@ -57,7 +55,7 @@ def is_admin(user_id):
 def add_user(user_id):
     conn = db_connect()
     cursor = conn.cursor()
-    cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (user_id,))
+    cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?,)", (user_id,))
     conn.commit()
     conn.close()
 
