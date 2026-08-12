@@ -31,7 +31,7 @@ def create_tables():
 
 def is_admin(user_id):
     import config
-    return str(user_id) == str(config.ADMIN_ID)
+    return user_id in config.ADMIN_IDS
 
 
 # --- Mijozlarni saqlash ---

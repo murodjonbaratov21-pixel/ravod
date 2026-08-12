@@ -207,7 +207,12 @@ async def fast_buy_finish(message: types.Message, state: FSMContext):
     username = f"@{message.from_user.username}" if message.from_user.username else "Yashiringan"
     admin_text = f"🚨 <b>YANGI ZAKAZ (Tezkor)!</b>\n\n👤 <b>Xaridor:</b> {message.from_user.first_name}\n📞 <b>Raqami:</b> {contact}\n🔗 <b>Profili:</b> {username}\n\n📦 <b>Mahsulot:</b> {prod[0]}\n💵 <b>Narxi:</b> {prod[1]} so'm"
 
-    await bot.send_message(config.ADMIN_ID, admin_text, parse_mode="HTML")
+    # Barcha adminlarga xabar jo'natish
+    for admin in config.ADMIN_IDS:
+        try:
+            await bot.send_message(admin, admin_text, parse_mode="HTML")
+        except:
+            pass
     await state.clear()
     await message.answer("✅ Buyurtmangiz qabul qilindi! Tez orada adminlarimiz siz bilan bog'lanadi.",
                          reply_markup=keyboards.get_user_kb(message.from_user.id))
