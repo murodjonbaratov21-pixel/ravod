@@ -29,9 +29,28 @@ def create_tables():
     conn.close()
 
 
+# create_tables ichidagi admins jadvalini shunday qiling:
+    cursor.execute('''CREATE TABLE IF NOT EXISTS admins (user_id INTEGER PRIMARY KEY, role TEXT)''')
+
+# add_admin funksiyasini shunday o'zgartiring:
+def add_admin(user_id, role):
+    conn = db_connect()
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR REPLACE INTO admins (user_id, role) VALUES (?, ?)", (user_id, role))
+    conn.commit()
+    conn.close()
+
+# is_admin funksiyasi:
 def is_admin(user_id):
     import config
-    return user_id in config.ADMIN_IDS
+    if str(user_id) == str(config.ADMIN_ID):
+        return True
+    conn = db_connect()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM admins WHERE user_id = ?", (user_id,))
+    res = cursor.fetchone()
+    conn.close()
+    return bool(res)
 
 
 # --- Mijozlarni saqlash ---

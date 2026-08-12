@@ -264,3 +264,90 @@ async def edit_prod_photo_finish(message: types.Message, state: FSMContext):
     database.update_product_photo(data['prod_id'], photo_id)
     await state.clear()
     await message.answer("✅ Mahsulot rasmi o'zgartirildi!", reply_markup=keyboards.admin_kb)
+
+
+from aiogram import Bot  # Eng tepaga Bot ni import qilishni unutmang
+
+
+class AddAdminState(StatesGroup):
+    role = State()
+    new_admin_id = State()
+    password = State()
+
+
+@admin_router.message(F.text == "⚙️ Admin panel")
+async def admin_panel(message: types.Message):
+    if database.is_admin(message.from_user.id):
+        # Tugma kimligiga qarab chiqadi
+        await message.answer("Boshqaruv paneli", reply_markup=keyboards.get_admin_kb(message.from_user.id))
+
+
+@admin_router.message(F.text == "👤 Admin qo'shish")
+async def add_admin_btn(message: types.Message, state: FSMContext):
+    import config
+    # Agar siz bo'lmasangiz, e'tibor bermaydi
+    if str(message.from_user.id) != str(config.ADMIN_ID):
+        return
+    await message.answer("Qanday lavozimga admin qo'shmoqchisiz?", reply_markup=keyboards.get_admin_roles_kb())
+
+
+@admin_router.callback_query(F.data.startswith("role_"))
+async def select_admin_role(call: types.CallbackQuery, state: FSMContext):
+    role = call.data.split("_")[1]
+    await state.update_data(role=role)
+    await call.message.edit_text("Yangi adminning Telegram ID raqamini kiriting:")
+    await state.set_state(AddAdminState.new_admin_id)
+
+
+@admin_router.message(AddAdminState.new_admin_id)
+async def enter_new_admin_id(message: types.Message, state: FSMContext):
+    await state.update_data(new_admin_id=message.text)
+    await message.answer("🔒 <b>Xavfsizlik tizimi:</b>\n\nIltimos, tasdiqlash uchun Maxfiy Parolni kiriting:",
+                         parse_mode="HTML", reply_markup=types.ReplyKeyboardRemove())
+    await state.set_state(AddAdminState.password)
+
+
+@admin_router.message(AddAdminState.password)
+async def verify_admin_password(message: types.Message, state: FSMContext, bot: Bot):
+    import config
+
+    # 1. PAROLNI EKRANDAN O'CHIRIB TASHLAYMIZ!
+    try:
+        await message.delete()
+    except:
+        pass
+
+    # 2. Parolni tekshirish
+    if message.text != config.MASTER_PASSWORD:
+        await message.answer("❌ <b>XAVFSIZLIK XATOSI!</b> Noto'g'ri parol kiritildi. Amaliyot bekor qilindi.",
+                             parse_mode="HTML", reply_markup=keyboards.get_admin_kb(message.from_user.id))
+        await state.clear()
+        return
+
+    # 3. Parol to'g'ri bo'lsa
+    data = await state.get_data()
+    new_id = data['new_admin_id']
+    role = data['role']
+
+    database.add_admin(new_id, role)
+
+    role_names = {"boss": "Boshliq", "manager": "Menejer", "operator": "Operator"}
+    role_uz = role_names.get(role, "Admin")
+
+    await message.answer(
+        f"✅ <b>Xavfsizlik tekshiruvidan muvaffaqiyatli o'tdi!</b>\n\nID: {new_id} endi {role_uz} lavozimida.",
+        parse_mode="HTML", reply_markup=keyboards.get_admin_kb(message.from_user.id))
+
+    # 4. Adminga Murodjon Baratov nomidan xabar yuborish
+    welcome_text = (
+        f"🎉 <b>Tabriklaymiz!</b>\n\n"
+        f"Hurmatli hamkasb, sizni <b>Baratov Murodjon boshliq</b> Ravod do'koniga <b>{role_uz}</b> qilib tayinladi! 🤝\n\n"
+        "Tizimga kirish uchun /start tugmasini bosing."
+    )
+    try:
+        await bot.send_message(new_id, welcome_text, parse_mode="HTML")
+    except:
+        await message.answer(
+            "⚠️ Tizimga qo'shildi, lekin adminga xabar borolmadi (u avval botga /start bosmagan bo'lishi mumkin).")
+
+    await state.clear()

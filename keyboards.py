@@ -10,16 +10,31 @@ def get_user_kb(telegram_id):
         kb.append([KeyboardButton(text="⚙️ Admin panel")])
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Kerakli bo'limni tanlang...")
 
-# YANGI: Admin panel toza va tartibli bo'ldi
-admin_kb = ReplyKeyboardMarkup(
-    keyboard=[
+
+# Boshqa fayllar xato bermasligi uchun qolgan joylarda ham keyboards.get_admin_kb(message.from_user.id) deb chaqiriladi
+def get_admin_kb(telegram_id):
+    import config
+    kb = [
         [KeyboardButton(text="📂 Kat. qo'shish"), KeyboardButton(text="📦 Mahsulot qo'shish")],
         [KeyboardButton(text="🛠 Kategoriya boshqaruvi"), KeyboardButton(text="⚙️ Mahsulot boshqaruvi")],
-        [KeyboardButton(text="🔄 Botni yangilash")], # YANGI QO'SHILDI
-        [KeyboardButton(text="🔙 Bosh menyuga qaytish")]
-    ],
-    resize_keyboard=True
-)
+        [KeyboardButton(text="🔄 Botni yangilash")]
+    ]
+    # Yashirin tugma: Faqat sizning ID raqamingiz bo'lsa chiqadi!
+    if str(telegram_id) == str(config.ADMIN_ID):
+        kb.append([KeyboardButton(text="👤 Admin qo'shish")])
+
+    kb.append([KeyboardButton(text="🔙 Bosh menyuga qaytish")])
+    return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+
+
+# Lavozim tanlash tugmalari
+def get_admin_roles_kb():
+    builder = InlineKeyboardBuilder()
+    builder.button(text="👑 Boshliq", callback_data="role_boss")
+    builder.button(text="👔 Menejer", callback_data="role_manager")
+    builder.button(text="🗣 Operator", callback_data="role_operator")
+    builder.adjust(1)
+    return builder.as_markup()
 
 cancel_kb = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="🔙 Orqaga")]], resize_keyboard=True)
 contact_kb = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="📞 Raqamni yuborish", request_contact=True)], [KeyboardButton(text="🔙 Orqaga")]], resize_keyboard=True)
