@@ -55,10 +55,9 @@ def is_admin(user_id):
 def add_user(user_id):
     conn = db_connect()
     cursor = conn.cursor()
-    cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?,)", (user_id,))
+    cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (user_id,))
     conn.commit()
     conn.close()
-
 
 def get_all_users():
     conn = db_connect()
