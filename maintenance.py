@@ -2,9 +2,8 @@ from aiogram import Router, types, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 import database
-import keyboards
 import config
-
+import admin_kb as keyboards
 maintenance_router = Router()
 
 

@@ -16,8 +16,6 @@ def create_tables():
         '''CREATE TABLE IF NOT EXISTS carts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, product_id INTEGER)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)''')
-
-    # MANA SHU YERGA QO'SHILDI (Baza yopilishidan oldin)
     cursor.execute('''CREATE TABLE IF NOT EXISTS admins (user_id INTEGER PRIMARY KEY, role TEXT)''')
 
     try:
@@ -27,10 +25,36 @@ def create_tables():
 
     cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('maintenance', '0')")
 
+    # === YANGI: VERSIYA VA TARGET UCHUN XOTIRA ===
+    cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('current_version', '1.0.0')")
+    cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('last_update_date', '2026-09-05')")
+    cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('next_version', '')")
+    cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('next_features', '')")
+    cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('target_users', '0')")
+
     conn.commit()
     conn.close()
 
 
+# === YANGI FUNKSIYALAR: SOZLAMALARNI O'QISH VA YOZISH ===
+def get_setting(key):
+    conn = db_connect()
+    cursor = conn.cursor()
+    cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
+    res = cursor.fetchone()
+    conn.close()
+    return res[0] if res else ""
+
+
+def set_setting(key, value):
+    conn = db_connect()
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (key, value))
+    conn.commit()
+    conn.close()
+
+
+# QOLGAN BARCHA KODLARINGIZ O'Z HOLLICHA QOLDIRILDI:
 def add_admin(user_id, role):
     conn = db_connect()
     cursor = conn.cursor()
@@ -51,13 +75,13 @@ def is_admin(user_id):
     return bool(res)
 
 
-# --- Mijozlarni saqlash ---
 def add_user(user_id):
     conn = db_connect()
     cursor = conn.cursor()
     cursor.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (user_id,))
     conn.commit()
     conn.close()
+
 
 def get_all_users():
     conn = db_connect()
@@ -68,25 +92,14 @@ def get_all_users():
     return users
 
 
-# --- Texnik xizmat ---
 def get_maintenance():
-    conn = db_connect()
-    cursor = conn.cursor()
-    cursor.execute("SELECT value FROM settings WHERE key = 'maintenance'")
-    status = cursor.fetchone()[0]
-    conn.close()
-    return status
+    return get_setting('maintenance')
 
 
 def set_maintenance(status):
-    conn = db_connect()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE settings SET value = ? WHERE key = 'maintenance'", (status,))
-    conn.commit()
-    conn.close()
+    set_setting('maintenance', status)
 
 
-# --- Qolgan barcha eski kodlar ---
 def add_category(name):
     conn = db_connect()
     cursor = conn.cursor()
@@ -202,3 +215,18 @@ def update_product_photo(prod_id, photo_id):
     cursor.execute("UPDATE products SET photo_id = ? WHERE id = ?", (photo_id, prod_id))
     conn.commit()
     conn.close()
+
+
+def get_all_admins():
+    import config
+    admins = [int(config.ADMIN_ID)]
+    conn = db_connect()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM admins")
+    rows = cursor.fetchall()
+    conn.close()
+    for row in rows:
+        admin_id = int(row[0])
+        if admin_id not in admins:
+            admins.append(admin_id)
+    return admins
