@@ -82,8 +82,7 @@ async def show_one_product(call: types.CallbackQuery):
     prod_id = int(call.data.split("_")[1])
     conn = database.db_connect()
     cursor = conn.cursor()
-    cursor.execute("SELECT name, description, price, photo_id, is_available, category_id FROM products WHERE id = ?",
-                   (prod_id,))
+    cursor.execute("SELECT name, description, price, photo_id, is_available, category_id FROM products WHERE id = ?", (prod_id,))
     prod = cursor.fetchone()
     conn.close()
 
@@ -94,9 +93,8 @@ async def show_one_product(call: types.CallbackQuery):
     status_text = "🟢 Sotuvda bor" if prod[4] else "🔴 Qolmagan (Vaqtinchalik yo'q)"
     caption = f"🏷 <b>Mahsulot:</b> {prod[0]}\n\n📋 <b>Tavsif:</b> {prod[1]}\n\n💵 <b>Narxi:</b> {prod[2]} so'm\n\n📌 <b>Holati:</b> {status_text}"
 
-    await call.message.delete()
-    await call.message.answer_photo(photo=prod[3], caption=caption, parse_mode="HTML",
-                                    reply_markup=keyboards.get_product_actions_kb(prod_id, prod[4], prod[5]))
+    # O'CHIRIB TASHLLASH BEKOR QILINDI - pastidan yangisi chiqadi:
+    await call.message.answer_photo(photo=prod[3], caption=caption, parse_mode="HTML", reply_markup=keyboards.get_product_actions_kb(prod_id, prod[4], prod[5]))
     await call.answer()
 
 

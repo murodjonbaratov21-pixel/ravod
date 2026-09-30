@@ -11,14 +11,16 @@ admin_kb = ReplyKeyboardMarkup(keyboard=[
 ], resize_keyboard=True)
 
 
-# AQLLI get_admin_kb (Siz uchun)
+# admin_kb.py faylidagi get_admin_kb funksiyasi:
 def get_admin_kb(telegram_id):
     import config
     kb = [
         [KeyboardButton(text="📂 Kat. qo'shish"), KeyboardButton(text="📦 Mahsulot qo'shish")],
         [KeyboardButton(text="🛠 Kategoriya boshqaruvi"), KeyboardButton(text="⚙️ Mahsulot boshqaruvi")],
-        # MANA SHU YERDA IKKITA TUGMA YONMA-YON BO'LISHI KERAK:
-        [KeyboardButton(text="🔄 Botni yangilash"), KeyboardButton(text="📈 Versiya boshqaruvi")]
+        # MANA SHU YERGA YANGI 2 TA TUGMA QO'SHILDI:
+        [KeyboardButton(text="📊 Statistika"), KeyboardButton(text="✉️ Xabar yuborish")],
+        [KeyboardButton(text="🔄 Botni yangilash"), KeyboardButton(text="📈 Versiya boshqaruvi")],
+        [KeyboardButton(text="📝 Chekni o'zgartirish")]
     ]
 
     if str(telegram_id) == str(config.ADMIN_ID):
@@ -74,5 +76,20 @@ def get_admin_product_actions_kb(product_id, is_available, category_id):
     builder.button(text=status_text, callback_data=f"toggle_{product_id}")
     builder.button(text="❌ Butunlay o'chirish", callback_data=f"delprod_{product_id}")
     builder.button(text="🔙 Orqaga", callback_data=f"mngprodcat_{category_id}")
+    builder.adjust(1)
+    return builder.as_markup()
+
+# admin_kb.py eng pastiga qo'shing:
+def get_broadcast_target_kb():
+    builder = InlineKeyboardBuilder()
+    builder.button(text="📢 Barcha foydalanuvchilarga", callback_data="target_all")
+    builder.button(text="👤 Aniq bitta foydalanuvchiga", callback_data="target_one")
+    builder.adjust(1)
+    return builder.as_markup()
+
+def get_broadcast_type_kb():
+    builder = InlineKeyboardBuilder()
+    builder.button(text="💬 Oddiy xabar", callback_data="msgtype_plain")
+    builder.button(text="🔗 Havolali (Tugmali) xabar", callback_data="msgtype_button")
     builder.adjust(1)
     return builder.as_markup()
