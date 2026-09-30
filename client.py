@@ -29,14 +29,11 @@ def get_order_confirmation_kb(order_type):
 
 
 def order_policy_text():
-    return (
-        "🚚 <b>Yetkazib berish:</b> buyurtmani Yandex orqali yuboramiz.\n"
-        "Buyurtma yetkazib berilganda qadoq holatini ko'rsatamiz va tekshirish imkonini beramiz.\n\n"
-        "💳 <b>To'lov:</b> karta orqali o'tkazma.\n"
-        "To'lov bo'yicha admin siz bilan bog'lanadi.\n\n"
-        "Quyidagi tugma orqali buyurtmani tasdiqlang."
-    )
-
+    try:
+        with open('/root/ravod/policy.txt', 'r', encoding='utf-8') as f:
+            return f.read()
+    except:
+        return "Qoidalar o'rnatilmagan."
 
 # ================= BEKOR QILISH =================
 @client_router.message(F.text == "🔙 Orqaga", FastOrder.contact)
@@ -199,8 +196,9 @@ async def confirm_cart_order(call: types.CallbackQuery, state: FSMContext, bot: 
     for i, item in enumerate(items, 1):
         order_list += f"{i}. {item[0]} — {item[1]} so'm\n"
         total_price += item[1]
-    username = f"@{call.from_user.username}" if call.from_user.username else "Yashiringan"
-    admin_text = f"🚨 <b>YANGI ZAKAZ (Savatchadan)!</b>\n\n👤 <b>Xaridor:</b> {call.from_user.first_name}\n📞 <b>Raqami:</b> {contact}\n🔗 <b>Profili:</b> {username}\n\n📦 <b>Mahsulotlar:</b>\n{order_list}💵 <b>Jami to'lov:</b> {total_price} so'm"
+    name = str(call.from_user.full_name).replace("<", "").replace(">", "") if call.from_user.full_name else "Mijoz"
+    username_link = f"@{call.from_user.username}" if call.from_user.username else f"<a href='tg://user?id={call.from_user.id}'>👤 Profilga o'tish (Bosish)</a>"
+    admin_text = f"🚨 <b>YANGI ZAKAZ (Savatchadan)!</b>\n\n👤 <b>Xaridor:</b> {name}\n📞 <b>Raqami:</b> {contact}\n🔗 <b>Profili:</b> {username_link}\n\n📦 <b>Mahsulotlar:</b>\n{order_list}💵 <b>Jami to'lov:</b> {total_price} so'm"
 
     admin_ids = database.get_all_admins()
     sent_count = 0
@@ -255,7 +253,7 @@ async def fast_buy_finish(message: types.Message, state: FSMContext):
 
     conn = database.db_connect()
     cursor = conn.cursor()
-    cursor.execute("SELECT name, price FROM products WHERE id = ?", (prod_id,))
+    cursor.execute("SELECT name, price, description FROM products WHERE id = ?", (prod_id,))
     prod = cursor.fetchone()
     conn.close()
 
@@ -285,7 +283,7 @@ async def confirm_fast_order(call: types.CallbackQuery, state: FSMContext, bot: 
 
     conn = database.db_connect()
     cursor = conn.cursor()
-    cursor.execute("SELECT name, price FROM products WHERE id = ?", (prod_id,))
+    cursor.execute("SELECT name, price, description FROM products WHERE id = ?", (prod_id,))
     prod = cursor.fetchone()
     conn.close()
 
@@ -294,8 +292,9 @@ async def confirm_fast_order(call: types.CallbackQuery, state: FSMContext, bot: 
         await call.message.edit_text("❌ Mahsulot topilmadi.")
         return
 
-    username = f"@{call.from_user.username}" if call.from_user.username else "Yashiringan"
-    admin_text = f"🚨 <b>YANGI ZAKAZ (Tezkor)!</b>\n\n👤 <b>Xaridor:</b> {call.from_user.first_name}\n📞 <b>Raqami:</b> {contact}\n🔗 <b>Profili:</b> {username}\n\n📦 <b>Mahsulot:</b> {prod[0]}\n💵 <b>Narxi:</b> {prod[1]} so'm"
+    name = str(call.from_user.full_name).replace("<", "").replace(">", "") if call.from_user.full_name else "Mijoz"
+    username_link = f"@{call.from_user.username}" if call.from_user.username else f"<a href='tg://user?id={call.from_user.id}'>👤 Profilga o'tish (Bosish)</a>"
+    admin_text = f"🚨 <b>YANGI ZAKAZ (Tezkor)!</b>\n\n👤 <b>Xaridor:</b> {name}\n📞 <b>Raqami:</b> {contact}\n🔗 <b>Profili:</b> {username_link}\n\n📦 <b>Mahsulot:</b> {prod[0]}\n📋 <b>Tavsif:</b> {prod[2]}\n💵 <b>Narxi:</b> {prod[1]} so'm"
 
     admin_ids = database.get_all_admins()
     sent_count = 0

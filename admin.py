@@ -258,3 +258,42 @@ async def do_finish(call: types.CallbackQuery, bot: Bot):
     await call.message.edit_text(
         "✅ <b>Yangilash muvaffaqiyatli yakunlandi!</b>\nBot blokdan yechildi va hammaga xabar ketdi.",
         parse_mode="HTML")
+@admin_router.message(F.text.startswith("/qoida"))
+async def update_policy_cmd(message: types.Message):
+    admin_ids = database.get_all_admins()
+    if message.from_user.id in admin_ids:
+        new_policy = message.text.replace("/qoida", "", 1).strip()
+        with open('/root/ravod/policy.txt', 'w', encoding='utf-8') as f:
+            f.write(new_policy)
+        await message.answer(f"✅ Qoidalar matni muvaffaqiyatli o'zgartirildi!\n\nYangi matn:\n{new_policy}")
+
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+
+class PolicyEdit(StatesGroup):
+    new_text = State()
+
+@admin_router.message(F.text == "📝 Chekni o'zgartirish")
+async def edit_policy_start(message: types.Message, state: FSMContext):
+    try:
+        with open('/root/ravod/policy.txt', 'r', encoding='utf-8') as f:
+            current_text = f.read()
+    except:
+        current_text = "Hozircha matn yo'q."
+    
+    await message.answer("<b>Hozirgi chek matni:</b>\n\n" + current_text, parse_mode="HTML")
+    await message.answer("📝 <b>Yangi matnni yuboring:</b>\n(Bekor qilish uchun <i>Bekor</i> deb yozing)", parse_mode="HTML")
+    await state.set_state(PolicyEdit.new_text)
+
+@admin_router.message(PolicyEdit.new_text)
+async def edit_policy_finish(message: types.Message, state: FSMContext):
+    if message.text.lower() == "bekor":
+        await state.clear()
+        await message.answer("❌ Bekor qilindi.")
+        return
+    
+    with open('/root/ravod/policy.txt', 'w', encoding='utf-8') as f:
+        f.write(message.text)
+    
+    await state.clear()
+    await message.answer("✅ Chek matni muvaffaqiyatli yangilandi! Mijozlarga endi shu matn boradi.")

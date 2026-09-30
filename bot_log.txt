@@ -1,0 +1,4 @@
+nohup: ignoring input
+Received SIGTERM signal
+🚀 Ravod platformasi yengillashgan tizim bilan ishga tushdi!
+👑 Hozirgi adminlar: [8556588732, 8240498274, 8521863343]

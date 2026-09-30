@@ -6,6 +6,7 @@ admin_kb = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="📂 Kat. qo'shish"), KeyboardButton(text="📦 Mahsulot qo'shish")],
     [KeyboardButton(text="🛠 Kategoriya boshqaruvi"), KeyboardButton(text="⚙️ Mahsulot boshqaruvi")],
     [KeyboardButton(text="🔄 Botni yangilash"), KeyboardButton(text="📈 Versiya boshqaruvi")],
+    [KeyboardButton(text="📝 Chekni o'zgartirish")],
     [KeyboardButton(text="🔙 Bosh menyuga qaytish")]
 ], resize_keyboard=True)
 
